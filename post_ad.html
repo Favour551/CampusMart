@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CampusMart - Post Ad</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body{
+    background:#f8f9fa;
+}
+
+.card{
+    background:#0f172a;
+    color:white;
+    border:none;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.15);
+}
+
+        .preview-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid #ccc;
+        }
+
+        .img-wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        .img-wrap button {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: none;
+            background: #dc3545;
+            color: white;
+            font-size: 12px;
+            line-height: 1;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        #imageFeedback {
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-dark bg-dark px-3">
+    <a class="navbar-brand" href="dashboard.html">CampusMart</a>
+
+    <div>
+        <a href="dashboard.html" class="btn btn-primary btn-sm">Back</a>
+        <a href="user-dashboard.html" class="btn btn-outline-light btn-sm">My Account</a>
+        <a href="index.html" class="btn btn-danger btn-sm">Logout</a>
+    </div>
+</nav>
+
+<!-- FORM SECTION -->
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="card shadow-lg p-4">
+
+                <h3 class="text-center mb-3">Post a New Ad</h3>
+
+                <form id="adForm" onsubmit="submitAd(event)">
+
+                    <div class="mb-3">
+                        <label class="form-label">Product Title</label>
+                        <input type="text" id="title" class="form-control" placeholder="e.g Television" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Price</label>
+                        <input type="number" id="price" class="form-control" placeholder="Enter price" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Enter your Whatsapp Number</label>
+                        <input type="number" id="number" class="form-control" placeholder="Enter whatsapp number" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Condition</label>
+                        <select id="condition" class="form-select">
+                            <option>New</option>
+                            <option>Used</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Location</label>
+                        <input id="location" type="text" class="form-control" placeholder="e.g Oye">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="description" rows="3" placeholder="Describe your product"></textarea>
+                    </div>
+
+                    <!-- IMAGE UPLOAD SECTION -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Upload Images
+                            <small class="text-light">(Max 4 images, 5MB total)</small>
+                        </label>
+
+                        <input
+                            type="file"
+                            id="adImages"
+                            class="form-control"
+                            accept="image/*"
+                            multiple
+                            onchange="handleImageSelect(event)"
+                        >
+
+                        <div id="imageFeedback" class="form-text mt-1"></div>
+                    </div>
+
+                    <!-- PREVIEW AREA -->
+                    <div id="previewArea" class="mb-3 d-flex gap-2 flex-wrap"></div>
+
+                    <button id="submitBtn" class="btn btn-success w-100">
+                        Submit Ad
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- IMAGE HANDLING -->
+<script>
+
+const MAX_FILES = 4;
+const MAX_TOTAL_SIZE = 5 * 1024 * 1024;
+
+let selectedFiles = [];
+
+function handleImageSelect(event) {
+
+    const files = Array.from(event.target.files);
+
+    const feedback = document.getElementById('imageFeedback');
+    const previewArea = document.getElementById('previewArea');
+
+    selectedFiles = [];
+    previewArea.innerHTML = '';
+
+    // CHECK IMAGE COUNT
+    if (files.length > MAX_FILES) {
+
+        feedback.textContent =
+            `You can only upload up to ${MAX_FILES} images`;
+
+        feedback.className =
+            'form-text mt-1 text-danger';
+
+        event.target.value = '';
+
+        return;
+    }
+
+    // CHECK TOTAL SIZE
+    const totalSize = files.reduce(
+        (sum, file) => sum + file.size,
+        0
+    );
+
+    if (totalSize > MAX_TOTAL_SIZE) {
+
+        feedback.textContent =
+            `Total image size exceeds 5MB`;
+
+        feedback.className =
+            'form-text mt-1 text-danger';
+
+        event.target.value = '';
+
+        return;
+    }
+
+    selectedFiles = files;
+
+    feedback.textContent =
+        `${files.length} image(s) selected • ${(totalSize / (1024*1024)).toFixed(2)} MB total`;
+
+    feedback.className =
+        'form-text mt-1 text-success';
+
+    // PREVIEW IMAGES
+    previewArea.innerHTML = '';
+
+    files.forEach((file, index) => {
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+
+            const wrap = document.createElement('div');
+
+            wrap.className = 'img-wrap';
+
+            wrap.innerHTML = `
+                <img src="${e.target.result}" class="preview-box">
+
+                <button
+                    type="button"
+                    onclick="removeImage(${index})"
+                >
+                    ×
+                </button>
+            `;
+
+            previewArea.appendChild(wrap);
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
+
+function removeImage(index) {
+
+    selectedFiles.splice(index, 1);
+
+    const totalSize = selectedFiles.reduce(
+        (sum, file) => sum + file.size,
+        0
+    );
+
+    const feedback =
+        document.getElementById('imageFeedback');
+
+    if (selectedFiles.length === 0) {
+
+        feedback.textContent = '';
+
+        document.getElementById('adImages').value = '';
+
+    } else {
+
+        feedback.textContent =
+            `${selectedFiles.length} image(s) selected • ${(totalSize / (1024*1024)).toFixed(2)} MB total`;
+    }
+
+    const previewArea =
+        document.getElementById('previewArea');
+
+    previewArea.innerHTML = '';
+
+    selectedFiles.forEach((file, idx) => {
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+
+            const wrap = document.createElement('div');
+
+            wrap.className = 'img-wrap';
+
+            wrap.innerHTML = `
+                <img src="${e.target.result}" class="preview-box">
+
+                <button
+                    type="button"
+                    onclick="removeImage(${idx})"
+                >
+                    ×
+                </button>
+            `;
+
+            previewArea.appendChild(wrap);
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
+
+</script>
+
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const supabaseUrl =
+    "https://lrvczyzarnpyqfgqjbdn.supabase.co";
+
+const supabaseKey =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxydmN6eXphcm5weXFmZ3FqYmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NzEzNzIsImV4cCI6MjA5MzE0NzM3Mn0.hqnXLyA6-Q6Mg9o7YsEWuUX6NO8YTHWXJHS2ysMRltk";
+
+const supabaseClient =
+    window.supabase.createClient(
+        supabaseUrl,
+        supabaseKey
+    );
+
+
+// SUBMIT AD
+async function submitAd(event) {
+
+    event.preventDefault();
+
+    const submitBtn =
+        document.getElementById("submitBtn");
+
+    submitBtn.disabled = true;
+
+    submitBtn.innerText = "Posting...";
+
+    // GET LOGGED IN USER
+    const {
+        data: { user }
+    } = await supabaseClient.auth.getUser();
+
+    if (!user) {
+
+        alert("Please login first");
+
+        submitBtn.disabled = false;
+
+        submitBtn.innerText = "Submit Ad";
+
+        return;
+    }
+
+    // GET FORM VALUES
+    const title =
+        document.getElementById("title").value;
+
+    const price =
+        document.getElementById("price").value;
+
+    const number =
+        document.getElementById("number").value;
+
+    const description =
+        document.getElementById("description").value;
+
+    const condition =
+        document.getElementById("condition").value; 
+
+    const location =
+        document.getElementById("location").value;    
+
+
+    // UPLOAD IMAGES
+    let imageUrls = [];
+
+    for (const file of selectedFiles) {
+
+        const fileName =
+            Date.now() + "-" + file.name;
+
+        const { error: uploadError } =
+            await supabaseClient.storage
+                .from("product-images")
+                .upload(fileName, file);
+
+        if (uploadError) {
+
+            alert(uploadError.message);
+
+            submitBtn.disabled = false;
+
+            submitBtn.innerText = "Submit Ad";
+
+            return;
+        }
+
+        // GET IMAGE URL
+        const { data } =
+            supabaseClient.storage
+                .from("product-images")
+                .getPublicUrl(fileName);
+
+        imageUrls.push(data.publicUrl);
+    }
+
+    // SAVE PRODUCT
+    const { error } =
+        await supabaseClient
+            .from("products")
+            .insert([
+                {
+                    title: title,
+                    price: price,
+                    whatsapp_number: number,
+                    description: description,
+                    condition:condition,
+                    location:location,
+                    images: imageUrls,
+                    user_id: user.id
+                }
+            ]);
+
+    if (error) {
+
+        alert(error.message);
+
+        submitBtn.disabled = false;
+
+        submitBtn.innerText = "Submit Ad";
+
+        return;
+    }
+
+    alert("Ad posted successfully!");
+
+    document.getElementById("adForm").reset();
+
+    document.getElementById("previewArea").innerHTML = "";
+
+    document.getElementById("imageFeedback").textContent = "";
+
+    selectedFiles = [];
+
+    submitBtn.disabled = false;
+
+    submitBtn.innerText = "Submit Ad";
+
+    // REDIRECT
+    window.location.href = "dashboard.html";
+}
+
+</script>
+
+</body>
+</html>
