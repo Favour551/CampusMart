@@ -3,7 +3,6 @@
 <head>
 
     <meta charset="UTF-8">
-
     <meta name="viewport"
     content="width=device-width, initial-scale=1.0">
 
@@ -28,6 +27,17 @@
 </head>
 
 <body>
+<nav class="navbar navbar-dark bg-dark px-3">
+    <a class="navbar-brand fw-bold" href="dashboard.html">CampusMart</a>
+
+    <div>
+        <a href="dashboard.html" class="btn btn-primary btn-sm">
+            Marketplace
+        </a>
+        <a href="user-dashboard.html" class="btn btn-outline-light btn-sm">My Account</a>
+        <a href="index.html" class="btn btn-danger btn-sm">Logout</a>
+    </div>
+</nav>
 
 <div class="container py-5">
 
@@ -56,12 +66,13 @@
                         <textarea
                             id="message"
                             class="form-control"
-                            rows="6"
+                            rows="15"
                             required
                         ></textarea>
 
                     </div>
-
+                    <br>
+                    <br>
                     <button
                         class="btn btn-danger w-100 py-2"
                     >
